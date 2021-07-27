@@ -5,7 +5,6 @@
 
 class CPixel
 {
-
 };
 
 #endif

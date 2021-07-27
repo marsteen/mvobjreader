@@ -1,23 +1,30 @@
 /**********************************************************************
+ *
+ * CRect Modul
+ *
+ * (c) 2003 Martin Steen / imagon GmbH
+ *
+ * Version 1.0
+ *
+ * 07-2003
+ *
+ * Rechteck Klasse
+ *
+ ************************************************************************/
 
- CRect Modul
 
- (c) 2003 Martin Steen / imagon GmbH
-
- Version 1.0
-
- 07-2003
-
- Rechteck Klasse
-
-************************************************************************/
+template<class T>
+T maxT(T a, T b)
+{
+    return (a > b) ? a : b;
+}
 
 
-template <class T>
-T maxT(T a, T b) { return (a > b) ? a : b; }
-
-template <class T>
-T minT(T a, T b) { return (a < b) ? a : b; }
+template<class T>
+T minT(T a, T b)
+{
+    return (a < b) ? a : b;
+}
 
 
 //---------------------------------------------------------------------------
@@ -42,17 +49,24 @@ T minT(T a, T b) { return (a < b) ? a : b; }
 //
 //---------------------------------------------------------------------------
 
-template <class T>
+template<class T>
 bool CRectT<T>::IntersectLine(T A1, T B1, T A2, T B2, T* A3, T* B3) const
 {
-	*A3 = maxT(A1, A2);
-	if ((*A3 > B1) || (*A3 > B2)) return false;
+    *A3 = maxT(A1, A2);
+    if ((*A3 > B1) || (*A3 > B2))
+    {
+        return false;
+    }
 
-	*B3 = minT(B1, B2);
-	if ((*B3 < A1) || (*B3 < A2)) return false;
+    *B3 = minT(B1, B2);
+    if ((*B3 < A1) || (*B3 < A2))
+    {
+        return false;
+    }
 
-	return true;
+    return true;
 }
+
 
 //---------------------------------------------------------------------------
 //
@@ -69,18 +83,19 @@ bool CRectT<T>::IntersectLine(T A1, T B1, T A2, T B2, T* A3, T* B3) const
 //
 //---------------------------------------------------------------------------
 
-template <class T>
+template<class T>
 bool CRectT<T>::InterSectRect(const CRectT* r2, CRectT* ri) const
 {
-	if (IntersectLine(left, right, r2->left, r2->right, &(ri->left), &(ri->right)))
-	{
-		if (IntersectLine(top, bottom, r2->top, r2->bottom, &(ri->top), &(ri->bottom)))
-		{
-			return true;
-		}
-	}
-	return false;
+    if (IntersectLine(left, right, r2->left, r2->right, &(ri->left), &(ri->right)))
+    {
+        if (IntersectLine(top, bottom, r2->top, r2->bottom, &(ri->top), &(ri->bottom)))
+        {
+            return true;
+        }
+    }
+    return false;
 }
+
 
 //---------------------------------------------------------------------------
 //
@@ -89,20 +104,25 @@ bool CRectT<T>::InterSectRect(const CRectT* r2, CRectT* ri) const
 //
 //---------------------------------------------------------------------------
 
-template <class T>
+template<class T>
 void CRectT<T>::TrimRect()
 {
-	T SwapVal;
+    T SwapVal;
 
-	if (right < left)
-	{
-		SwapVal = left; left = right; right = SwapVal;
-	}
-	if (bottom < top)
-	{
-		SwapVal = top; top = bottom; bottom = SwapVal;
-	}
+    if (right < left)
+    {
+        SwapVal = left;
+        left = right;
+        right = SwapVal;
+    }
+    if (bottom < top)
+    {
+        SwapVal = top;
+        top = bottom;
+        bottom = SwapVal;
+    }
 }
+
 
 //---------------------------------------------------------------------------
 //
@@ -114,13 +134,12 @@ void CRectT<T>::TrimRect()
 //               false - nicht im Rechteck
 //---------------------------------------------------------------------------
 
-template <class T>
+template<class T>
 bool CRectT<T>::InRect(T x, T y)
 {
-	return (x >= left) && (x <= right) &&
-	       (y >= top)  && (y <= bottom);
+    return (x >= left) && (x <= right) &&
+           (y >= top) && (y <= bottom);
 }
-
 
 
 //---------------------------------------------------------------------------
@@ -130,14 +149,15 @@ bool CRectT<T>::InRect(T x, T y)
 //
 //---------------------------------------------------------------------------
 
-template <class T>
+template<class T>
 void CRectT<T>::Add(T xoff, T yoff)
 {
-  left   += xoff;
-  top    += yoff;
-  right  += xoff;
-  bottom += yoff;
+    left += xoff;
+    top += yoff;
+    right += xoff;
+    bottom += yoff;
 }
+
 
 //---------------------------------------------------------------------------
 //
@@ -147,12 +167,12 @@ void CRectT<T>::Add(T xoff, T yoff)
 //
 //---------------------------------------------------------------------------
 
-template <class T>
+template<class T>
 void CRectT<T>::Show(const char* title, std::stringstream& mstr)
 {
-	mstr << title
-	     << " l=" << left
-	     << " t=" << top
-	     << " r=" << right
-	     << " b=" << bottom;
+    mstr	<< title
+            << " l=" << left
+            << " t=" << top
+            << " r=" << right
+            << " b=" << bottom;
 }

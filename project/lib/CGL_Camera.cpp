@@ -23,10 +23,11 @@ using namespace std;
 
 void CGL_Camera::LookAt()
 {
-	gluLookAt(mStandort.x, mStandort.y, mStandort.z,  // Standort der Kamera
- 			      mVispoint.x, mVispoint.y, mVispoint.z,  // anvisierter Punkt
-			      mUpvector.x, mUpvector.y, mUpvector.z); // Vektor, der "oben" angibt
+    gluLookAt(mStandort.x, mStandort.y, mStandort.z,    // Standort der Kamera
+        mVispoint.x, mVispoint.y, mVispoint.z,          // anvisierter Punkt
+        mUpvector.x, mUpvector.y, mUpvector.z);         // Vektor, der "oben" angibt
 }
+
 
 //---------------------------------------------------------------------------
 //
@@ -38,7 +39,7 @@ void CGL_Camera::LookAt()
 
 void CGL_Camera::Reset()
 {
-	mStandort.Set(0,0,-60.0);
-	mVispoint.Set(0,0,0);
-	mUpvector.Set(0,1,0);
+    mStandort.Set(0, 0, -60.0);
+    mVispoint.Set(0, 0, 0);
+    mUpvector.Set(0, 1, 0);
 }

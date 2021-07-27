@@ -1,4 +1,3 @@
-
 #ifndef CGRAFLIBJPEG
 #define CGRAFLIBJPEG
 
@@ -9,34 +8,33 @@
 
 class CGraflibJpeg : public CGraflib
 {
-	public:
+    public:
 
-		CGraflibJpeg()
-		{
-			mJpegInterface = NULL;
-			mJpegQuality   = 80;
-		}
+        CGraflibJpeg()
+        {
+            mJpegInterface = NULL;
+            mJpegQuality = 80;
+        }
 
-		bool Read(const char* Filename, SFileReadInfo* fri = NULL);
-		int  Write(const char* Filename, bool bCompFlag, CFileIO* fio = NULL);
 
-		bool OpenReadLine(const char* Filename);
-		void ReadLine(void* LineBuffer);
-		void CloseReadLine(void);
+        bool Read(const char* Filename, SFileReadInfo* fri = NULL);
+        int Write(const char* Filename, bool bCompFlag, CFileIO* fio = NULL);
 
-		bool OpenWriteLine(const char* Filename);
-		void WriteLine(void* LineBuffer);
-		void CloseWriteLine(void);
+        bool OpenReadLine(const char* Filename);
+        void ReadLine(void* LineBuffer);
+        void CloseReadLine(void);
 
-		void SetAppendMode(bool b);
+        bool OpenWriteLine(const char* Filename);
+        void WriteLine(void* LineBuffer);
+        void CloseWriteLine(void);
 
-		int  mJpegQuality;
+        void SetAppendMode(bool b);
 
-	protected:
+        int mJpegQuality;
 
-		void* mJpegInterface;
+    protected:
+
+        void* mJpegInterface;
 };
 
 #endif
-
-

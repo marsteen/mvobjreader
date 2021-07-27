@@ -28,14 +28,15 @@ using namespace std;
 
 bool CFileIOMem::ReadBytes(void* buffer, int nBytes)
 {
-	if (mReadMode == EFILEREADMODE_FILE)
-	{
-		return CFileIO::ReadBytes(buffer, nBytes);
-	}
-	memcpy(buffer, mMemPtr, nBytes);
-	mMemPtr += nBytes;
-	return true;
+    if (mReadMode == EFILEREADMODE_FILE)
+    {
+        return CFileIO::ReadBytes(buffer, nBytes);
+    }
+    memcpy(buffer, mMemPtr, nBytes);
+    mMemPtr += nBytes;
+    return true;
 }
+
 
 // ---------------------------------------------------------------------------
 //
@@ -48,18 +49,18 @@ bool CFileIOMem::ReadBytes(void* buffer, int nBytes)
 
 void* CFileIOMem::ReadBytes(int nBytes)
 {
-	if (mReadMode == EFILEREADMODE_FILE)
-	{
-		return CFileIO::ReadBytes(nBytes);
-	}
+    if (mReadMode == EFILEREADMODE_FILE)
+    {
+        return CFileIO::ReadBytes(nBytes);
+    }
 
-	//cout << "CFileIOMem ReadBytes;" << nBytes << endl;
-	char* ReadBuffer = new char[nBytes];
-	memcpy(ReadBuffer, mMemPtr, nBytes);
-	mMemPtr += nBytes;
-	return ReadBuffer;
-
+    //cout << "CFileIOMem ReadBytes;" << nBytes << endl;
+    char* ReadBuffer = new char[nBytes];
+    memcpy(ReadBuffer, mMemPtr, nBytes);
+    mMemPtr += nBytes;
+    return ReadBuffer;
 }
+
 
 // ---------------------------------------------------------------------------
 //
@@ -72,10 +73,10 @@ void* CFileIOMem::ReadBytes(int nBytes)
 
 void CFileIOMem::CloseFile()
 {
-	if (mReadMode == EFILEREADMODE_FILE)
-	{
-		CFileIO::CloseFile();
-		return;
-	}
-	mOpenRead = false;
+    if (mReadMode == EFILEREADMODE_FILE)
+    {
+        CFileIO::CloseFile();
+        return;
+    }
+    mOpenRead = false;
 }

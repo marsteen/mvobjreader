@@ -1,16 +1,13 @@
-
-
 #ifndef CANGLE_H
 #define CANGLE_H
 
-template <typename Tfloat>
+template<typename Tfloat>
 class CAngle
 {
-	public:
+    public:
 
-		static void   Trim360(Tfloat& a1);
-		static Tfloat Diff(const Tfloat a1, const Tfloat a2);
-
+        static void Trim360(Tfloat& a1);
+        static Tfloat Diff(const Tfloat a1, const Tfloat a2);
 };
 
 
@@ -25,11 +22,18 @@ class CAngle
 //
 //---------------------------------------------------------------------------
 
-template <typename Tfloat>
+template<typename Tfloat>
 void CAngle<Tfloat>::Trim360(Tfloat& a1)
 {
-	while (a1 > 360.0) a1 -= 360.0;
-	while (a1 < 0.0)   a1 += 360.0;
+    while (a1 > 360.0)
+    {
+        a1 -= 360.0;
+    }
+
+    while (a1 < 0.0)
+    {
+        a1 += 360.0;
+    }
 }
 
 
@@ -44,39 +48,41 @@ void CAngle<Tfloat>::Trim360(Tfloat& a1)
 //
 //---------------------------------------------------------------------------
 
-template <typename Tfloat>
+template<typename Tfloat>
 Tfloat CAngle<Tfloat>::Diff(const Tfloat a1, const Tfloat a2)
 {
-	Tfloat diff;
-	if (a2 > a1)
-	{
-		Tfloat d1 = a2 - a1;
-		Tfloat d2 = (a1 + 360) - a2;
+    Tfloat diff;
 
-		if (d2 < d1)
-		{
-			diff = -d2;
-		}
-		else
-		{
-			diff = d1;
-		}
-	}
-	else
-	{
-		Tfloat d1 = a1 - a2;
-		Tfloat d2 = (a2 + 360) - a1;
+    if (a2 > a1)
+    {
+        Tfloat d1 = a2 - a1;
+        Tfloat d2 = (a1 + 360) - a2;
 
-		if (d2 < d1)
-		{
-			diff = d2;
-		}
-		else
-		{
-			diff = -d1;
-		}
-	}
-	return diff;
+        if (d2 < d1)
+        {
+            diff = -d2;
+        }
+        else
+        {
+            diff = d1;
+        }
+    }
+    else
+    {
+        Tfloat d1 = a1 - a2;
+        Tfloat d2 = (a2 + 360) - a1;
+
+        if (d2 < d1)
+        {
+            diff = d2;
+        }
+        else
+        {
+            diff = -d1;
+        }
+    }
+    return diff;
 }
+
 
 #endif

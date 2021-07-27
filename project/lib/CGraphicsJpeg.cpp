@@ -14,14 +14,15 @@
 
 
 using namespace std;
+
 /*
-#include <CParser.h>
-#include <CDebug.h>
-#include <CDatabase.h>
-#include <CPixel24.h>
-#include <CPixel32.h>
-#include <CGraphicsFormat.h>
-*/
+ #include <CParser.h>
+ #include <CDebug.h>
+ #include <CDatabase.h>
+ #include <CPixel24.h>
+ #include <CPixel32.h>
+ #include <CGraphicsFormat.h>
+ */
 #include <CGraphicsJpeg.h>
 
 
@@ -31,76 +32,76 @@ using namespace std;
 
 extern "C"
 {
-  #include <jpeglib.h>
+#include <jpeglib.h>
 }
 
 extern "C"
 {
-  // im Assembler Teil
-  void asmSwapRGB(unsigned char *px, long picsize);
-  void asmSplitLine(unsigned char *q, unsigned char *z, int linesize);;
-  unsigned short pixel24to16bit(unsigned char *pixel24bit);
+// im Assembler Teil
+void asmSwapRGB(unsigned char* px, long picsize);
+void asmSplitLine(unsigned char* q, unsigned char* z, int linesize);
+unsigned short pixel24to16bit(unsigned char* pixel24bit);
 }
 
 struct my_error_mgr
 {
-  struct jpeg_error_mgr pub;    /* "public" fields */
-  jmp_buf setjmp_buffer;        /* for return to caller */
+    struct jpeg_error_mgr	pub;            /* "public" fields */
+    jmp_buf					setjmp_buffer;  /* for return to caller */
 };
 
-typedef struct my_error_mgr * my_error_ptr;
+typedef struct my_error_mgr* my_error_ptr;
 
 
 struct SJpegParams
 {
-	SJpegParams()
-	{
-		memset(this, 0, sizeof(SJpegParams));
-	}
-
-  struct jpeg_decompress_struct cinfo;
-  struct jpeg_compress_struct   cinfo2;
-  struct my_error_mgr jerr;
-
-  FILE*      infile;        /* source file */
-  FILE*      outfile;
-  JSAMPARRAY buffer;        /* Output row buffer */
-  JSAMPLE*   image_buffer;
-  int row_stride;           /* physical row width in output buffer */
-  int soll_linesize;
-
-  int xsize;
-  int ysize;
-  int image_height;        /* Number of rows in image */
-  int image_width;         /* Number of columns in image */
+    SJpegParams()
+    {
+        memset(this, 0, sizeof(SJpegParams));
+    }
 
 
-  unsigned char* GLbuffer;
-  unsigned char* MainBuffer;
+    struct jpeg_decompress_struct	cinfo;
+    struct jpeg_compress_struct		cinfo2;
+    struct my_error_mgr				jerr;
+
+    FILE*							infile;     /* source file */
+    FILE*							outfile;
+    JSAMPARRAY						buffer;     /* Output row buffer */
+    JSAMPLE*						image_buffer;
+    int								row_stride; /* physical row width in output buffer */
+    int								soll_linesize;
+
+    int								xsize;
+    int								ysize;
+    int								image_height;   /* Number of rows in image */
+    int								image_width;    /* Number of columns in image */
+
+
+    unsigned char*					GLbuffer;
+    unsigned char*					MainBuffer;
 };
 
 
 CGraphicsJpeg::CGraphicsJpeg()
 {
-	mFileOffset = 0;
-	mAppendMode = false;
-	mJparams = (char*) (new SJpegParams);
+    mFileOffset = 0;
+    mAppendMode = false;
+    mJparams = (char*)(new SJpegParams);
 }
 
 
 CGraphicsJpeg::~CGraphicsJpeg()
 {
-	delete[] mJparams;
+    delete[] mJparams;
 }
 
 
-
 #if 0
-static JSAMPLE *image_buffer;   /* Points to large array of R,G,B-order data */
+static JSAMPLE* image_buffer;   /* Points to large array of R,G,B-order data */
 static int image_height;        /* Number of rows in image */
 static int image_width;         /* Number of columns in image */
 static int soll_linesize;
-static unsigned char *GLbuffer;
+static unsigned char* GLbuffer;
 #endif
 
 
@@ -113,21 +114,19 @@ static unsigned char *GLbuffer;
 
 
 METHODDEF(void)
-my_error_exit (j_common_ptr cinfo)
+my_error_exit(j_common_ptr cinfo)
 {
+#if 1
+    /* cinfo->err really points to a my_error_mgr struct, so coerce pointer */
+    my_error_ptr myerr = (my_error_ptr)cinfo->err;
 
-	#if 1
-  /* cinfo->err really points to a my_error_mgr struct, so coerce pointer */
-  my_error_ptr myerr = (my_error_ptr) cinfo->err;
+    /* Always display the message. */
+    /* We could postpone this until after returning, if we chose. */
+    (*cinfo->err->output_message)(cinfo);
 
-  /* Always display the message. */
-  /* We could postpone this until after returning, if we chose. */
-  (*cinfo->err->output_message) (cinfo);
-
-  /* Return control to the setjmp point */
-  longjmp(myerr->setjmp_buffer, 1);
-  #endif
-
+    /* Return control to the setjmp point */
+    longjmp(myerr->setjmp_buffer, 1);
+#endif
 }
 
 //---------------------------------------------------------------------------
@@ -140,14 +139,15 @@ my_error_exit (j_common_ptr cinfo)
 
 void* CGraphicsJpeg::OpenJpegFile(const char* filename)
 {
-	FILE* fp = fopen(filename, "rb");
+    FILE* fp = fopen(filename, "rb");
 
-	if (mFileOffset > 0)
-	{
-		fseek(fp, mFileOffset, 0);
-	}
-	return fp;
+    if (mFileOffset > 0)
+    {
+        fseek(fp, mFileOffset, 0);
+    }
+    return fp;
 }
+
 
 //---------------------------------------------------------------------------
 //
@@ -159,25 +159,24 @@ void* CGraphicsJpeg::OpenJpegFile(const char* filename)
 
 bool CGraphicsJpeg::OpenJpegRead(const char* filename, int* Width, int* Height, int* ByteProPixel)
 {
-	//Debug2 << "OpenJpegRead start " << filename << DBLF;
+    //Debug2 << "OpenJpegRead start " << filename << DBLF;
 
-	memset(mJparams, 0, sizeof(SJpegParams));
-	SJpegParams* jp = (SJpegParams*) mJparams;
+    memset(mJparams, 0, sizeof(SJpegParams));
+    SJpegParams* jp = (SJpegParams*)mJparams;
 
 //  Debug.Print("CGraphicsJpeg::OpenJpegRead File=", filename);
 
-  jp->infile = (FILE*) OpenJpegFile(filename);
+    jp->infile = (FILE*)OpenJpegFile(filename);
 
-  if (jp->infile == NULL)
-  {
-		//Debug2 << "***** CGraphicsJpeg::OpenJpegRead Fehler:" << filename << DBLF;
-    //fprintf(stderr, "can't open %s\n", filename);
-    *Width  = 0;
-    *Height = 0;
-    return false;
-  }
-	return InitJpegRead(Width, Height, ByteProPixel);
-
+    if (jp->infile == NULL)
+    {
+        //Debug2 << "***** CGraphicsJpeg::OpenJpegRead Fehler:" << filename << DBLF;
+        //fprintf(stderr, "can't open %s\n", filename);
+        *Width = 0;
+        *Height = 0;
+        return false;
+    }
+    return InitJpegRead(Width, Height, ByteProPixel);
 }
 
 
@@ -192,37 +191,39 @@ bool CGraphicsJpeg::OpenJpegRead(const char* filename, int* Width, int* Height, 
 
 bool CGraphicsJpeg::InitJpegRead(int* Width, int* Height, int* ByteProPixel)
 {
-	SJpegParams* jp = (SJpegParams*) mJparams;
+    SJpegParams* jp = (SJpegParams*)mJparams;
 
-  jp->cinfo.err = jpeg_std_error(&jp->jerr.pub);
-  //jp->jerr.pub.error_exit = my_error_exit;
+    jp->cinfo.err = jpeg_std_error(&jp->jerr.pub);
+    //jp->jerr.pub.error_exit = my_error_exit;
 
-  if (setjmp(jp->jerr.setjmp_buffer))
-  {
-    jpeg_destroy_decompress(&(jp->cinfo));
-    fclose(jp->infile);
-    return false;
-  }
+    if (setjmp(jp->jerr.setjmp_buffer))
+    {
+        jpeg_destroy_decompress(&(jp->cinfo));
+        fclose(jp->infile);
+        return false;
+    }
 
-  jpeg_create_decompress(&jp->cinfo);
-  jpeg_stdio_src(&(jp->cinfo), jp->infile);
-  jpeg_read_header(&(jp->cinfo), TRUE);
+    jpeg_create_decompress(&jp->cinfo);
+    jpeg_stdio_src(&(jp->cinfo), jp->infile);
+    jpeg_read_header(&(jp->cinfo), TRUE);
 
-  jpeg_start_decompress(&(jp->cinfo));
-  jp->row_stride = jp->cinfo.output_width * jp->cinfo.output_components;
-  jp->buffer = (*(jp->cinfo.mem->alloc_sarray))
-               ((j_common_ptr) &(jp->cinfo), JPOOL_IMAGE, jp->row_stride, 1);
+    jpeg_start_decompress(&(jp->cinfo));
+    jp->row_stride = jp->cinfo.output_width * jp->cinfo.output_components;
+    jp->buffer = (*(jp->cinfo.mem->alloc_sarray))
+            ((j_common_ptr) &(jp->cinfo), JPOOL_IMAGE, jp->row_stride, 1);
 
-  *Width        = jp->cinfo.image_width;
-  *Height       = jp->cinfo.image_height;
-  *ByteProPixel = jp->cinfo.output_components;
-  mByteProPixel = jp->cinfo.output_components;
+    *Width = jp->cinfo.image_width;
+    *Height = jp->cinfo.image_height;
+    *ByteProPixel = jp->cinfo.output_components;
+    mByteProPixel = jp->cinfo.output_components;
 
-	//Debug2 << "CGraphicsJpeg::InitJpegRead output_components   =" << jp->cinfo.output_components << DBLF;
-  //Debug2 << "CGraphicsJpeg::InitJpegRead out_color_components=" << jp->cinfo.out_color_components << DBLF;
+    //Debug2 << "CGraphicsJpeg::InitJpegRead output_components   =" << jp->cinfo.output_components << DBLF;
+    //Debug2 << "CGraphicsJpeg::InitJpegRead out_color_components=" << jp->cinfo.out_color_components << DBLF;
 
-  return true;
+    return true;
 }
+
+
 #endif
 
 //---------------------------------------------------------------------------
@@ -235,18 +236,16 @@ bool CGraphicsJpeg::InitJpegRead(int* Width, int* Height, int* ByteProPixel)
 
 bool CGraphicsJpeg::ReadJpegLine()
 {
-	SJpegParams* jp = (SJpegParams*) mJparams;
+    SJpegParams* jp = (SJpegParams*)mJparams;
 
-  if (jp->cinfo.output_scanline < jp->cinfo.output_height)
-  {
-    jpeg_read_scanlines(&(jp->cinfo), jp->buffer, 1);
-    put_scanline(jp->buffer[0], jp->row_stride);
-    return true;
-  }
-  return false;
+    if (jp->cinfo.output_scanline < jp->cinfo.output_height)
+    {
+        jpeg_read_scanlines(&(jp->cinfo), jp->buffer, 1);
+        put_scanline(jp->buffer[0], jp->row_stride);
+        return true;
+    }
+    return false;
 }
-
-
 
 
 //---------------------------------------------------------------------------
@@ -259,12 +258,13 @@ bool CGraphicsJpeg::ReadJpegLine()
 
 void CGraphicsJpeg::CloseJpeg()
 {
-	SJpegParams* jp = (SJpegParams*) mJparams;
+    SJpegParams* jp = (SJpegParams*)mJparams;
 
-  jpeg_finish_decompress(&(jp->cinfo));
-  jpeg_destroy_decompress(&(jp->cinfo));
-  fclose(jp->infile);
+    jpeg_finish_decompress(&(jp->cinfo));
+    jpeg_destroy_decompress(&(jp->cinfo));
+    fclose(jp->infile);
 }
+
 
 //---------------------------------------------------------------------------
 //
@@ -276,36 +276,37 @@ void CGraphicsJpeg::CloseJpeg()
 
 bool CGraphicsJpeg::GetJpegSize(const char* fname, short* xsize, short* ysize, int* channels)
 {
-	//Debug2 << "CGraphicsJpeg::GetJpegSize START fname=" << fname << DBLF;
+    //Debug2 << "CGraphicsJpeg::GetJpegSize START fname=" << fname << DBLF;
 
-	SJpegParams jp;
+    SJpegParams jp;
 
-	jp.infile = (FILE*) OpenJpegFile(fname);
+    jp.infile = (FILE*)OpenJpegFile(fname);
 
-	jp.cinfo.err = jpeg_std_error(&jp.jerr.pub);
-	jp.jerr.pub.error_exit = my_error_exit;
+    jp.cinfo.err = jpeg_std_error(&jp.jerr.pub);
+    jp.jerr.pub.error_exit = my_error_exit;
 
-  jpeg_create_decompress(&jp.cinfo);
+    jpeg_create_decompress(&jp.cinfo);
 
-  jpeg_stdio_src(&(jp.cinfo), jp.infile);
+    jpeg_stdio_src(&(jp.cinfo), jp.infile);
 
-  jpeg_read_header(&(jp.cinfo), TRUE);
+    jpeg_read_header(&(jp.cinfo), TRUE);
 
-  *xsize    = jp.cinfo.image_width;
-  *ysize    = jp.cinfo.image_height;
+    *xsize = jp.cinfo.image_width;
+    *ysize = jp.cinfo.image_height;
 
 
-  if (channels != NULL)
-  {
-  	*channels = jp.cinfo.num_components;
-	}
+    if (channels != NULL)
+    {
+        *channels = jp.cinfo.num_components;
+    }
 
-  jpeg_destroy_decompress(&(jp.cinfo));
+    jpeg_destroy_decompress(&(jp.cinfo));
 
-	fclose(jp.infile);
+    fclose(jp.infile);
 
-	return true;
+    return true;
 }
+
 
 //---------------------------------------------------------------------------
 //
@@ -317,17 +318,17 @@ bool CGraphicsJpeg::GetJpegSize(const char* fname, short* xsize, short* ysize, i
 
 bool CGraphicsJpeg::ReadJpegLine(void* PixelBuffer)
 {
-	SJpegParams* jp = (SJpegParams*) mJparams;
+    SJpegParams* jp = (SJpegParams*)mJparams;
 
-  if (jp->cinfo.output_scanline < jp->cinfo.output_height)
-  {
-    jpeg_read_scanlines(&(jp->cinfo), jp->buffer, 1);
-    memcpy(PixelBuffer, jp->buffer[0],  jp->row_stride);
-    return true;
-  }
-  return false;
-
+    if (jp->cinfo.output_scanline < jp->cinfo.output_height)
+    {
+        jpeg_read_scanlines(&(jp->cinfo), jp->buffer, 1);
+        memcpy(PixelBuffer, jp->buffer[0], jp->row_stride);
+        return true;
+    }
+    return false;
 }
+
 
 //---------------------------------------------------------------------------
 //
@@ -339,12 +340,11 @@ bool CGraphicsJpeg::ReadJpegLine(void* PixelBuffer)
 
 void CGraphicsJpeg::CloseJpegLines()
 {
-	SJpegParams* jp = (SJpegParams*) mJparams;
+    SJpegParams* jp = (SJpegParams*)mJparams;
 
-  delete jp->MainBuffer;
-  jp->MainBuffer = NULL;
-  CloseJpeg();
-
+    delete jp->MainBuffer;
+    jp->MainBuffer = NULL;
+    CloseJpeg();
 }
 
 
@@ -356,28 +356,31 @@ void CGraphicsJpeg::CloseJpegLines()
 //
 //---------------------------------------------------------------------------
 
-void* CGraphicsJpeg::ReadJpeg(const char *fname, int* Width, int* Height, int* ByteProPixel)
+void* CGraphicsJpeg::ReadJpeg(const char* fname, int* Width, int* Height, int* ByteProPixel)
 {
-	// ,,
-	if (OpenJpegRead(fname, Width, Height, ByteProPixel))
-	{
-		SJpegParams* jp = (SJpegParams*) mJparams;
+    // ,,
+    if (OpenJpegRead(fname, Width, Height, ByteProPixel))
+    {
+        SJpegParams* jp = (SJpegParams*)mJparams;
 
-		unsigned char* PixelBuffer = new unsigned char[(*Width) * (*Height) * (*ByteProPixel)];
-		jp->GLbuffer = PixelBuffer;
+        unsigned char* PixelBuffer = new unsigned char[(*Width) * (*Height) * (*ByteProPixel)];
+        jp->GLbuffer = PixelBuffer;
 
-	  jp->image_buffer = (JSAMPLE*) jp->GLbuffer;
+        jp->image_buffer = (JSAMPLE*)jp->GLbuffer;
 
-	  jp->soll_linesize = (*Width) * (*ByteProPixel);
+        jp->soll_linesize = (*Width) * (*ByteProPixel);
 
-	  while (ReadJpegLine());
+        while (ReadJpegLine())
+        {
+        }
 
-	  CloseJpeg();
+        CloseJpeg();
 
-		return PixelBuffer;
-	}
-	return NULL;
+        return PixelBuffer;
+    }
+    return NULL;
 }
+
 
 //---------------------------------------------------------------------------
 //
@@ -389,14 +392,14 @@ void* CGraphicsJpeg::ReadJpeg(const char *fname, int* Width, int* Height, int* B
 
 void* CGraphicsJpeg::ReadJpeg(const char* Filename, short* Width, short* Height, int TargetBitPerPixel)
 {
-	int w32, h32;
+    int w32, h32;
 
-	void* PixelBuffer = ReadJpeg(Filename, &w32, &h32, &mByteProPixel);
+    void* PixelBuffer = ReadJpeg(Filename, &w32, &h32, &mByteProPixel);
 
-	*Width = w32;
-	*Height = h32;
+    *Width = w32;
+    *Height = h32;
 
-	return PixelBuffer;
+    return PixelBuffer;
 }
 
 
@@ -409,46 +412,49 @@ void* CGraphicsJpeg::ReadJpeg(const char* Filename, short* Width, short* Height,
 //
 //---------------------------------------------------------------------------
 
-bool CGraphicsJpeg::ReadJpegHeap(char *fname, short* xko, short* yko, int TargetBitPerPixel, void* Heap)
+bool CGraphicsJpeg::ReadJpegHeap(char* fname, short* xko, short* yko, int TargetBitPerPixel, void* Heap)
 {
-  unsigned char *buffer;
-  void* PixelBuffer;
+    unsigned char* buffer;
+    void* PixelBuffer;
 
-  if (!GetJpegSize(fname, xko, yko))
-  {
-    //Debug.Print("JPEG Datei nicht gefunden:", fname);
-    return false;
-  }
+    if (!GetJpegSize(fname, xko, yko))
+    {
+        //Debug.Print("JPEG Datei nicht gefunden:", fname);
+        return false;
+    }
 
-  buffer = (unsigned char*) Heap;
-  GLbuffer = buffer;
+    buffer = (unsigned char*)Heap;
+    GLbuffer = buffer;
 
-  image_buffer = (JSAMPLE *) buffer;
+    image_buffer = (JSAMPLE*)buffer;
 
-  soll_linesize = (*xko) * 3;
+    soll_linesize = (*xko) * 3;
 
-  read_JPEG_file(fname);
+    read_JPEG_file(fname);
 
-  asmSwapRGB(buffer, (*xko) * (*yko));
+    asmSwapRGB(buffer, (*xko) * (*yko));
 
-  if (TargetBitPerPixel == 16)
-  {
-    SetPixelConverter(24);
-    PixelBuffer = Convert24BitTo16Bit(*xko, *yko, buffer);
-    memcpy(buffer, PixelBuffer, *xko * *yko * 2);
-    delete PixelBuffer;
-  }
-  else if (TargetBitPerPixel == 32)
-  {
-    PixelBuffer = Convert24BitTo32Bit(*xko, *yko, buffer);
-    memcpy(buffer, PixelBuffer, *xko * *yko * 4);
-    delete PixelBuffer;
-  }
-  else
-  {
-	}
-  return true;
+    if (TargetBitPerPixel == 16)
+    {
+        SetPixelConverter(24);
+        PixelBuffer = Convert24BitTo16Bit(*xko, *yko, buffer);
+        memcpy(buffer, PixelBuffer, *xko * *yko * 2);
+        delete PixelBuffer;
+    }
+    else
+    if (TargetBitPerPixel == 32)
+    {
+        PixelBuffer = Convert24BitTo32Bit(*xko, *yko, buffer);
+        memcpy(buffer, PixelBuffer, *xko * *yko * 4);
+        delete PixelBuffer;
+    }
+    else
+    {
+    }
+    return true;
 }
+
+
 #endif
 
 
@@ -460,22 +466,23 @@ bool CGraphicsJpeg::ReadJpegHeap(char *fname, short* xko, short* yko, int Target
 //
 //---------------------------------------------------------------------------
 
-int CGraphicsJpeg::WriteJpeg(const char* fname,short xw, short yw, unsigned char* buffer, int jq)
+int CGraphicsJpeg::WriteJpeg(const char* fname, short xw, short yw, unsigned char* buffer, int jq)
 {
-	if (OpenJpegWrite(fname, xw, yw, jq))
-	{
-		for (int i = 0; i < yw; i++)
-		{
-			//cout << "Write line " << i << endl;
+    if (OpenJpegWrite(fname, xw, yw, jq))
+    {
+        for (int i = 0; i < yw; i++)
+        {
+            //cout << "Write line " << i << endl;
 
-			WriteJpegLine(buffer);
-			buffer += xw * 3;
-		}
-		CloseJpegWrite();
-		return 1;
-	}
-  return 0;
+            WriteJpegLine(buffer);
+            buffer += xw * 3;
+        }
+        CloseJpegWrite();
+        return 1;
+    }
+    return 0;
 }
+
 
 //---------------------------------------------------------------------------
 //
@@ -486,22 +493,21 @@ int CGraphicsJpeg::WriteJpeg(const char* fname,short xw, short yw, unsigned char
 //
 //---------------------------------------------------------------------------
 
-int CGraphicsJpeg::WriteJpeg(FILE* fp, short xw, short yw, unsigned char *buffer, int jq)
+int CGraphicsJpeg::WriteJpeg(FILE* fp, short xw, short yw, unsigned char* buffer, int jq)
 {
+    SJpegParams* jp = (SJpegParams*)mJparams;
 
+    jp->image_buffer = (JSAMPLE*)buffer;
+    jp->image_height = yw;
+    jp->image_width = xw;
 
-	SJpegParams* jp = (SJpegParams*) mJparams;
+    int FilePos = ftell(fp);
 
-  jp->image_buffer = (JSAMPLE *) buffer;
-  jp->image_height = yw;
-  jp->image_width  = xw;
+    write_JPEG_file(fp, jq);
 
-  int FilePos = ftell(fp);
-
-  write_JPEG_file(fp, jq);
-
-  return ftell(fp) - FilePos;
+    return ftell(fp) - FilePos;
 }
+
 
 //---------------------------------------------------------------------------
 //
@@ -513,23 +519,26 @@ int CGraphicsJpeg::WriteJpeg(FILE* fp, short xw, short yw, unsigned char *buffer
 
 int CGraphicsJpeg::read_JPEG_file(const char* filename)
 {
-	bool r;
-	int Width, Height;
+    bool r;
+    int Width, Height;
 
 
-  if (OpenJpegRead(filename, &Width, &Height, &mByteProPixel))
-	{
-    while (ReadJpegLine());
+    if (OpenJpegRead(filename, &Width, &Height, &mByteProPixel))
+    {
+        while (ReadJpegLine())
+        {
+        }
 
-		CloseJpeg();
-	  r = true;
-	}
-	else
-	{
-		r = false;
-	}
-	return r;
+        CloseJpeg();
+        r = true;
+    }
+    else
+    {
+        r = false;
+    }
+    return r;
 }
+
 
 //---------------------------------------------------------------------------
 //
@@ -539,53 +548,51 @@ int CGraphicsJpeg::read_JPEG_file(const char* filename)
 //
 //---------------------------------------------------------------------------
 
-int CGraphicsJpeg::write_JPEG_file (const char* filename, int quality)
+int CGraphicsJpeg::write_JPEG_file(const char* filename, int quality)
 {
+    SJpegParams* jp = (SJpegParams*)mJparams;
 
+    struct jpeg_compress_struct cinfo;
+    struct jpeg_error_mgr jerr;
+    FILE* outfile;              /* target file */
+    JSAMPROW row_pointer[1];    /* pointer to JSAMPLE row[s] */
+    int row_stride;             /* physical row width in image buffer */
 
+    jp->cinfo.err = jpeg_std_error(&jerr);
+    jpeg_create_compress(&cinfo);
 
-	SJpegParams* jp = (SJpegParams*) mJparams;
+    if ((outfile = fopen(filename, "wb")) == NULL)
+    {
+        fprintf(stderr, "can't open %s\n", filename);
+        exit(1);
+    }
+    jpeg_stdio_dest(&cinfo, outfile);
 
-  struct jpeg_compress_struct cinfo;
-  struct jpeg_error_mgr jerr;
-  FILE * outfile;               /* target file */
-  JSAMPROW row_pointer[1];      /* pointer to JSAMPLE row[s] */
-  int row_stride;               /* physical row width in image buffer */
+    cinfo.image_width = jp->image_width;    /* image width and height, in pixels */
+    cinfo.image_height = jp->image_height;
+    cinfo.input_components = 3;             /* # of color components per pixel */
+    cinfo.in_color_space = JCS_RGB;         /* colorspace of input image */
+    jpeg_set_defaults(&cinfo);
+    jpeg_set_quality(&cinfo, quality, TRUE /* limit to baseline-JPEG values */);
 
-  jp->cinfo.err = jpeg_std_error(&jerr);
-  jpeg_create_compress(&cinfo);
+    jpeg_start_compress(&cinfo, TRUE);
 
-  if ((outfile = fopen(filename, "wb")) == NULL)
-  {
-    fprintf(stderr, "can't open %s\n", filename);
-    exit(1);
-  }
-  jpeg_stdio_dest(&cinfo, outfile);
+    row_stride = jp->image_width * 3; /* JSAMPLEs per row in image_buffer */
 
-  cinfo.image_width = jp->image_width;      /* image width and height, in pixels */
-  cinfo.image_height = jp->image_height;
-  cinfo.input_components = 3;           /* # of color components per pixel */
-  cinfo.in_color_space = JCS_RGB;       /* colorspace of input image */
-  jpeg_set_defaults(&cinfo);
-  jpeg_set_quality(&cinfo, quality, TRUE /* limit to baseline-JPEG values */);
+    while (cinfo.next_scanline < cinfo.image_height)
+    {
+        row_pointer[0] = &jp->image_buffer[cinfo.next_scanline * row_stride];
+        jpeg_write_scanlines(&cinfo, row_pointer, 1);
+    }
 
-  jpeg_start_compress(&cinfo, TRUE);
+    jpeg_finish_compress(&cinfo);
+    fclose(outfile);
 
-  row_stride = jp->image_width * 3; /* JSAMPLEs per row in image_buffer */
+    jpeg_destroy_compress(&cinfo);
 
-  while (cinfo.next_scanline < cinfo.image_height)
-  {
-    row_pointer[0] = & jp->image_buffer[cinfo.next_scanline * row_stride];
-    jpeg_write_scanlines(&cinfo, row_pointer, 1);
-  }
-
-  jpeg_finish_compress(&cinfo);
-  fclose(outfile);
-
-  jpeg_destroy_compress(&cinfo);
-
-  return 1;
+    return 1;
 }
+
 
 //---------------------------------------------------------------------------
 //
@@ -597,43 +604,44 @@ int CGraphicsJpeg::write_JPEG_file (const char* filename, int quality)
 
 bool CGraphicsJpeg::OpenJpegWrite(const char* filename, int Width, int Height, int JpegQuality)
 {
-	SJpegParams* jp = (SJpegParams*) mJparams;
+    SJpegParams* jp = (SJpegParams*)mJparams;
 
-  struct jpeg_error_mgr jerr;
+    struct jpeg_error_mgr jerr;
 
-  jp->image_width  = Width;
-  jp->image_height = Height;
+    jp->image_width = Width;
+    jp->image_height = Height;
 
-  jp->cinfo2.err = jpeg_std_error(&jerr);
-  jpeg_create_compress(&jp->cinfo2);
+    jp->cinfo2.err = jpeg_std_error(&jerr);
+    jpeg_create_compress(&jp->cinfo2);
 
-  if (mAppendMode)
-  {
-		//cout <<
+    if (mAppendMode)
+    {
+        //cout <<
 
-		if ((jp->outfile = fopen(filename, "ab+")) == NULL)
-		{
-			return false;
-		}
-	}
-	else
-  if ((jp->outfile = fopen(filename, "wb")) == NULL)
-  {
-		return false;
-  }
-  jpeg_stdio_dest(&jp->cinfo2, jp->outfile);
+        if ((jp->outfile = fopen(filename, "ab+")) == NULL)
+        {
+            return false;
+        }
+    }
+    else
+    if ((jp->outfile = fopen(filename, "wb")) == NULL)
+    {
+        return false;
+    }
+    jpeg_stdio_dest(&jp->cinfo2, jp->outfile);
 
-  jp->cinfo2.image_width  = jp->image_width;      /* image width and height, in pixels */
-  jp->cinfo2.image_height = jp->image_height;
-  jp->cinfo2.input_components = 3;                /* # of color components per pixel */
-  jp->cinfo2.in_color_space = JCS_RGB;            /* colorspace of input image */
-  jpeg_set_defaults(&jp->cinfo2);
-  jpeg_set_quality(&jp->cinfo2, JpegQuality, TRUE); /* limit to baseline-JPEG values */
+    jp->cinfo2.image_width = jp->image_width;           /* image width and height, in pixels */
+    jp->cinfo2.image_height = jp->image_height;
+    jp->cinfo2.input_components = 3;                    /* # of color components per pixel */
+    jp->cinfo2.in_color_space = JCS_RGB;                /* colorspace of input image */
+    jpeg_set_defaults(&jp->cinfo2);
+    jpeg_set_quality(&jp->cinfo2, JpegQuality, TRUE);   /* limit to baseline-JPEG values */
 
-  jpeg_start_compress(&jp->cinfo2, TRUE);
+    jpeg_start_compress(&jp->cinfo2, TRUE);
 
-  return true;
+    return true;
 }
+
 
 //---------------------------------------------------------------------------
 //
@@ -646,21 +654,21 @@ bool CGraphicsJpeg::OpenJpegWrite(const char* filename, int Width, int Height, i
 
 void CGraphicsJpeg::CloseJpegWrite()
 {
-	//cout << "CloseJpegWrite START" << endl;
+    //cout << "CloseJpegWrite START" << endl;
 
-	SJpegParams* jp = (SJpegParams*) mJparams;
+    SJpegParams* jp = (SJpegParams*)mJparams;
 
-  jpeg_finish_compress(&jp->cinfo2);
+    jpeg_finish_compress(&jp->cinfo2);
 
-  //cout << "1" << endl;
+    //cout << "1" << endl;
 
-  fclose(jp->outfile);
+    fclose(jp->outfile);
 
-  //cout << "2" << endl;
+    //cout << "2" << endl;
 
-  jpeg_destroy_compress(&jp->cinfo2);
+    jpeg_destroy_compress(&jp->cinfo2);
 
-  //cout << "CloseJpegWrite OK" << endl;
+    //cout << "CloseJpegWrite OK" << endl;
 }
 
 
@@ -675,11 +683,12 @@ void CGraphicsJpeg::CloseJpegWrite()
 
 void CGraphicsJpeg::WriteJpegLine(void* LineBuffer)
 {
-	SJpegParams* jp = (SJpegParams*) mJparams;
+    SJpegParams* jp = (SJpegParams*)mJparams;
 
-	JSAMPROW row_pointer[1];
-	row_pointer[0] = (JSAMPROW) LineBuffer;
-	jpeg_write_scanlines(&jp->cinfo2, row_pointer, 1);
+    JSAMPROW row_pointer[1];
+
+    row_pointer[0] = (JSAMPROW)LineBuffer;
+    jpeg_write_scanlines(&jp->cinfo2, row_pointer, 1);
 }
 
 
@@ -694,40 +703,41 @@ void CGraphicsJpeg::WriteJpegLine(void* LineBuffer)
 
 int CGraphicsJpeg::write_JPEG_file(FILE* outfile, int quality)
 {
-	SJpegParams* jp = (SJpegParams*) mJparams;
+    SJpegParams* jp = (SJpegParams*)mJparams;
 
-  struct jpeg_compress_struct cinfo;
-  struct jpeg_error_mgr jerr;
-  JSAMPROW row_pointer[1];      /* pointer to JSAMPLE row[s] */
+    struct jpeg_compress_struct cinfo;
+    struct jpeg_error_mgr jerr;
+    JSAMPROW row_pointer[1];    /* pointer to JSAMPLE row[s] */
 
-  cinfo.err = jpeg_std_error(&jerr);
-  jpeg_create_compress(&cinfo);
+    cinfo.err = jpeg_std_error(&jerr);
+    jpeg_create_compress(&cinfo);
 
-  jpeg_stdio_dest(&cinfo, outfile);
+    jpeg_stdio_dest(&cinfo, outfile);
 
-  cinfo.image_width = jp->image_width;      /* image width and height, in pixels */
-  cinfo.image_height = jp->image_height;
-  cinfo.input_components = 3;           /* # of color components per pixel */
-  cinfo.in_color_space = JCS_RGB;       /* colorspace of input image */
-  jpeg_set_defaults(&cinfo);
-  jpeg_set_quality(&cinfo, quality, TRUE /* limit to baseline-JPEG values */);
+    cinfo.image_width = jp->image_width;    /* image width and height, in pixels */
+    cinfo.image_height = jp->image_height;
+    cinfo.input_components = 3;             /* # of color components per pixel */
+    cinfo.in_color_space = JCS_RGB;         /* colorspace of input image */
+    jpeg_set_defaults(&cinfo);
+    jpeg_set_quality(&cinfo, quality, TRUE /* limit to baseline-JPEG values */);
 
-  jpeg_start_compress(&cinfo, TRUE);
+    jpeg_start_compress(&cinfo, TRUE);
 
-  jp->row_stride = jp->image_width * 3; /* JSAMPLEs per row in image_buffer */
+    jp->row_stride = jp->image_width * 3; /* JSAMPLEs per row in image_buffer */
 
-  while (cinfo.next_scanline < cinfo.image_height)
-  {
-    row_pointer[0] = &jp->image_buffer[cinfo.next_scanline * jp->row_stride];
-    jpeg_write_scanlines(&cinfo, row_pointer, 1);
-  }
+    while (cinfo.next_scanline < cinfo.image_height)
+    {
+        row_pointer[0] = &jp->image_buffer[cinfo.next_scanline * jp->row_stride];
+        jpeg_write_scanlines(&cinfo, row_pointer, 1);
+    }
 
-  jpeg_finish_compress(&cinfo);
+    jpeg_finish_compress(&cinfo);
 
-  jpeg_destroy_compress(&cinfo);
+    jpeg_destroy_compress(&cinfo);
 
-  return 1;
+    return 1;
 }
+
 
 //---------------------------------------------------------------------------
 //
@@ -739,35 +749,30 @@ int CGraphicsJpeg::write_JPEG_file(FILE* outfile, int quality)
 
 void CGraphicsJpeg::put_scanline(unsigned char* line_buffer, int line_size)
 {
-	SJpegParams* jp = (SJpegParams*) mJparams;
-	//static int linecount = 0;
+    SJpegParams* jp = (SJpegParams*)mJparams;
 
-  if (line_size == jp->soll_linesize)
-  {
-		//GLbuffer = jp->MainBuffer;
-    memcpy(jp->GLbuffer, line_buffer, line_size);
-    jp->GLbuffer += line_size;
-  }
-  else if (line_size == (jp->soll_linesize / 3))
-  {
-    //asmSplitLine(line_buffer, jp->GLbuffer, line_size);
-    jp->GLbuffer += jp->soll_linesize;
-  }
+    //static int linecount = 0;
+
+    if (line_size == jp->soll_linesize)
+    {
+        //GLbuffer = jp->MainBuffer;
+        memcpy(jp->GLbuffer, line_buffer, line_size);
+        jp->GLbuffer += line_size;
+    }
+    else
+    if (line_size == (jp->soll_linesize / 3))
+    {
+        //asmSplitLine(line_buffer, jp->GLbuffer, line_size);
+        jp->GLbuffer += jp->soll_linesize;
+    }
 
 /*
-  if (JpegLineFunction != NULL)
-  {
-		if ((linecount++ % 50) == 0)
-		{
-			(*JpegLineFunction)();
-		}
-	}
-*/
+ * if (JpegLineFunction != NULL)
+ * {
+ *      if ((linecount++ % 50) == 0)
+ *      {
+ *          (*JpegLineFunction)();
+ *      }
+ *  }
+ */
 }
-
-
-
-
-
-
-

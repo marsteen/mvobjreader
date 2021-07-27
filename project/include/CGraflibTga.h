@@ -19,27 +19,27 @@
 
 enum ETgaItype
 {
-	ETGA_ITYPE_8BIT_UNCOMPRESSED            = 1,
-	ETGA_ITYPE_RGB_UNCOMPRESSED             = 2,
-	ETGA_ITYPE_8BIT_UNCOMPRESSED_MONOCHROME = 3,
-	ETGA_ITYPE_8BIT_COMPRESSED              = 9,
-	ETGA_ITYPE_RGB_COMPRESSED               = 10,
-	ETGA_ITYPE_8BIT_COMPRESSED_MONOCHROME   = 11
+    ETGA_ITYPE_8BIT_UNCOMPRESSED			= 1,
+    ETGA_ITYPE_RGB_UNCOMPRESSED				= 2,
+    ETGA_ITYPE_8BIT_UNCOMPRESSED_MONOCHROME = 3,
+    ETGA_ITYPE_8BIT_COMPRESSED				= 9,
+    ETGA_ITYPE_RGB_COMPRESSED				= 10,
+    ETGA_ITYPE_8BIT_COMPRESSED_MONOCHROME	= 11
 };
 
 
 struct STgaHeader
 {
-  unsigned char  mIdent;    /* Anzahl der Zeichen im Identificationsfeld */
-  unsigned char  mCtype;    /* Color Map Type  */
-  unsigned char  mItype;    /* Image Type Code */
-  unsigned char  mCmap[5];  /* Color Map Specification */
-  short          mXorigin;
-  short          mYorigin;
-  short          mWidth;
-  short          mHeight;
-  unsigned char  mPsize;    /* Number of Bits in a stored pixel index */
-  unsigned char  mIbyte;    /* Image Descriptor Byte */
+    unsigned char	mIdent;     /* Anzahl der Zeichen im Identificationsfeld */
+    unsigned char	mCtype;     /* Color Map Type  */
+    unsigned char	mItype;     /* Image Type Code */
+    unsigned char	mCmap[5];   /* Color Map Specification */
+    short			mXorigin;
+    short			mYorigin;
+    short			mWidth;
+    short			mHeight;
+    unsigned char	mPsize; /* Number of Bits in a stored pixel index */
+    unsigned char	mIbyte; /* Image Descriptor Byte */
 };
 
 //---------------------------------------------------------------------------
@@ -50,41 +50,40 @@ struct STgaHeader
 
 class CTgaKompbase
 {
-	public:
+    public:
 
-		virtual unsigned int Compress(void* src, unsigned char* dest, int Width, int Height, int LineOffset) = 0;
-
+        virtual unsigned int Compress(void* src, unsigned char* dest, int Width, int Height, int LineOffset) = 0;
 };
 
-template <class TPixelType>
+template<class TPixelType>
 class CTgaKompressor : public CTgaKompbase
 {
-	public:
+    public:
 
 
-		TPixelType* Decompress(unsigned char *src, void* DstData, unsigned int psize);
-		unsigned int Compress(void* src, unsigned char* dest, int Width, int Height, int LineOffset);
+        TPixelType* Decompress(unsigned char* src, void* DstData, unsigned int psize);
+        unsigned int Compress(void* src, unsigned char* dest, int Width, int Height, int LineOffset);
 };
 
 
 class CGraflibTga : public CGraflib
 {
-	public:
+    public:
 
-		bool Read(const char* Filename, SFileReadInfo* fri = NULL);
-		int  Write(const char* Filename, bool bCompFlag, CFileIO* fio = NULL);
+        bool Read(const char* Filename, SFileReadInfo* fri = NULL);
+        int Write(const char* Filename, bool bCompFlag, CFileIO* fio = NULL);
 
 
 
-		bool OpenReadLine(const char* Filename) { return false; }
-		void ReadLine(void* LineBuffer) { }
-		void CloseReadLine(void)  { }
+        bool OpenReadLine(const char* Filename) { return false; }
+        void ReadLine(void* LineBuffer) { }
+        void CloseReadLine(void)  { }
 
-		bool OpenWriteLine(const char* Filename)  { return false; }
-		void WriteLine(void* LineBuffer) { }
-		void CloseWriteLine(void)  { }
+        bool OpenWriteLine(const char* Filename)  { return false; }
+        void WriteLine(void* LineBuffer) { }
+        void CloseWriteLine(void)  { }
 
-		bool ReadMem(const char* MemPtr, unsigned int FileSizeMem);
+        bool ReadMem(const char* MemPtr, unsigned int FileSizeMem);
 };
 
 #endif

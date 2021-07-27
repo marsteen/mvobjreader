@@ -1,5 +1,3 @@
-
-
 #ifndef CGL_TEXTURE_H
 #define CGL_TEXTURE_H
 
@@ -7,24 +5,24 @@
 
 class CGL_Texture
 {
-	public:
+    public:
 
-		CGL_Texture()
-		{
-			mTexHandle = 0;
-		}
-
-		bool LoadTextureTga(const char* TextureFilename);
-		void CreateTexture(const CGraflib* glib);
-		static void CreateTexture(int TexHandle, const CGraflib* glib, int WrapMode);
-		void DeleteTexture();
+        CGL_Texture()
+        {
+            mTexHandle = 0;
+        }
 
 
-		unsigned int mTexHandle;
-		int          mTexWidth;
-		int          mTexHeight;
-		int          mTexBitDepth;
+        bool LoadTextureTga(const char* TextureFilename);
+        void CreateTexture(const CGraflib* glib);
+        static void CreateTexture(int TexHandle, const CGraflib* glib, int WrapMode);
+        void DeleteTexture();
 
+
+        unsigned int mTexHandle;
+        int mTexWidth;
+        int mTexHeight;
+        int mTexBitDepth;
 };
 
 
