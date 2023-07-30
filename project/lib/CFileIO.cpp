@@ -397,10 +397,10 @@ bool CFileIO::OpenFileChange(const char* Filename, int Position)
 
 void* CFileIO::ReadFile(const char* Filename, int* nBytes)
 {
-    char* buffer = NULL;
+    char* buffer = nullptr;
 
     *nBytes = CFileIO::GetFileSize(Filename);
-    if (nBytes > 0)
+    if (*nBytes != 0)
     {
         if (OpenFileRead(Filename, ios::binary))
         {
